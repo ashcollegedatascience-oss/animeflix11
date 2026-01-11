@@ -3,237 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeFlex | Hunter x Hunter Premium</title>
+    <title>AnimeFlex | Premium Hunter Portal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;900&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
             --orange: #ff4500;
             --bg: #141414;
-            --sidebar-collapsed: 80px;
             --sidebar-w: 260px;
+            --sidebar-collapsed: 80px;
             --transition: 0.4s cubic-bezier(0.5, 0, 0.1, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: white; overflow: hidden; height: 100vh; font-family: 'Kanit', sans-serif; }
+        body { background: #000; color: white; overflow: hidden; height: 100vh; width: 100vw; font-family: 'Poppins', sans-serif; }
 
-        /* --- Screens --- */
-        .screen { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; transition: 0.8s ease; background: var(--bg); padding: 20px; }
-        .hidden { opacity: 0; pointer-events: none; visibility: hidden; display: none !important; }
+        /* --- SCREEN MANAGEMENT --- */
+        .screen { position: fixed; inset: 0; z-index: 9000; background: #000; display: flex; align-items: center; justify-content: center; transition: 0.8s ease; flex-direction: column; }
+        .hidden { opacity: 0 !important; pointer-events: none !important; visibility: hidden !important; }
+        
+        /* --- INTRO --- */
+        .logo-anim { font-size: clamp(3rem, 10vw, 6rem); font-family: 'Kanit'; font-weight: 900; letter-spacing: 10px; text-shadow: 0 0 50px var(--orange); animation: cinematicLogo 5s ease-in-out forwards; }
 
-        /* --- Intro Animation --- */
-        #intro-screen { background: #000; z-index: 2000; }
-        .logo-anim { font-size: clamp(3rem, 12vw, 6rem); font-weight: 900; letter-spacing: 10px; text-shadow: 0 0 50px var(--orange); animation: cinematicLogo 5s ease-in-out forwards; text-align: center; }
+        /* --- LOGIN PORTAL --- */
+        #login-screen { 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.alphacoders.com/250/250953.jpg') center/cover; 
+            z-index: 9500; 
+        }
 
-        /* --- Auth Portal --- */
-        #auth-screen { background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.alphacoders.com/250/250953.jpg') center/cover; z-index: 1500; font-family: 'Poppins', sans-serif; }
-        .glass-form { width: 100%; max-width: 420px; padding: 40px; border-radius: 24px; background: rgba(255, 255, 255, 0.07); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); display: none; flex-direction: column; }
-        .glass-form.active { display: flex; animation: slideUp 0.6s ease; }
-        .data { width: 100%; padding: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; margin-bottom: 20px; border-radius: 8px; outline: none; }
-        .btn-premium { width: 100%; height: 50px; border: none; border-radius: 12px; background: var(--orange); color: #fff; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .glass-panel {
+            width: 420px; padding: 50px 40px; border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.07); 
+            backdrop-filter: blur(20px) saturate(180%);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+            display: none; flex-direction: column;
+        }
+        .glass-panel.active { display: flex; animation: slideUp 0.6s ease; }
 
-        /* --- Dashboard --- */
-        .app-container { display: grid; grid-template-columns: var(--sidebar-collapsed) 1fr; height: 100vh; visibility: hidden; opacity: 0; transition: 0.5s; }
-        .sidebar { background: #000; border-right: 1px solid #222; z-index: 100; transition: var(--transition); }
+        .input-group { position: relative; margin-bottom: 25px; }
+        .data { width: 100%; padding: 12px 10px; background: rgba(255,255,255,0.1); border: none; border-bottom: 1.5px solid rgba(255, 255, 255, 0.3); font-size: 16px; color: #fff; outline: none; }
+        .input-group i { position: absolute; right: 10px; top: 15px; color: rgba(255, 255, 255, 0.5); }
+
+        /* --- PROFILE SELECTION --- */
+        #profile-screen { background: #000; z-index: 9400; overflow-y: auto; padding: 40px 0; }
+        .avatar-grid { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 15px; 
+            max-width: 1000px; 
+            padding: 20px;
+        }
+        .avatar-opt { width: 100%; aspect-ratio: 1; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: 0.3s; object-fit: cover; }
+        .avatar-opt:hover { transform: scale(1.1); border-color: #555; }
+        .avatar-opt.selected { border-color: var(--orange); box-shadow: 0 0 20px var(--orange); }
+
+        /* --- MAIN APP --- */
+        .app-container { display: grid; grid-template-columns: var(--sidebar-collapsed) 1fr; height: 100vh; visibility: hidden; opacity: 0; transition: 0.5s; font-family: 'Kanit', sans-serif; }
+        .sidebar { background: #000; display: flex; flex-direction: column; padding: 30px 0; border-right: 1px solid #222; transition: var(--transition); }
         .sidebar:hover { width: var(--sidebar-w); }
-        .nav-item { display: flex; align-items: center; padding: 20px 28px; color: #888; cursor: pointer; }
-        .nav-item span { opacity: 0; margin-left: 20px; transition: 0.2s; white-space: nowrap; }
+        .user-avatar-btn { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin: 0 auto 30px; border: 2px solid var(--orange); }
+
+        .nav-item { display: flex; align-items: center; padding: 18px 28px; color: #888; cursor: pointer; white-space: nowrap; }
+        .nav-item i { font-size: 1.4rem; min-width: 30px; }
+        .nav-item span { opacity: 0; margin-left: 20px; transition: 0.2s; }
         .sidebar:hover .nav-item span { opacity: 1; }
 
-        .main-view { overflow-y: auto; background: #141414; padding-bottom: 100px; }
-        .hero { height: 70vh; background: linear-gradient(to top, #141414, transparent), url('https://images8.alphacoders.com/712/712263.jpg') center/cover; display: flex; align-items: center; padding: 0 5%; }
+        .hero { height: 80vh; background: linear-gradient(to top, #141414, transparent), url('https://images8.alphacoders.com/712/712263.jpg') center/cover; display: flex; align-items: center; padding: 0 5%; }
         
-        /* --- Video Player & Overlays --- */
-        #player { position: fixed; inset: 0; z-index: 3000; background: #000; display: none; align-items: center; justify-content: center; }
-        .video-container { width: 100%; max-width: 1200px; position: relative; }
-        video { width: 100%; box-shadow: 0 0 50px rgba(0,0,0,1); }
-        
-        /* Specific Arc/Version Info Badge */
-        #arc-info { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.6); padding: 5px 15px; border-radius: 20px; font-size: 12px; color: var(--orange); border: 1px solid var(--orange); }
+        .btn-premium { padding: 15px 30px; border: none; border-radius: 8px; background: var(--orange); color: white; font-weight: 900; cursor: pointer; transition: 0.3s; }
+        .btn-premium:hover { transform: scale(1.05); background: #ff5500; }
 
-        .skip-intro-btn { position: absolute; bottom: 100px; right: 20px; background: #fff; color: #000; padding: 12px 25px; font-weight: 900; cursor: pointer; display: none; border: none; font-family: 'Kanit'; font-size: 16px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-
-        #next-up-overlay { position: absolute; bottom: 100px; right: 20px; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 8px; border: 1px solid #444; width: 300px; display: none; flex-direction: column; gap: 10px; animation: slideInRight 0.5s ease; }
-        .timer-bar { height: 4px; background: #333; width: 100%; border-radius: 2px; overflow: hidden; }
-        .timer-progress { height: 100%; background: var(--orange); width: 100%; transition: linear; transform-origin: left; }
-
-        /* --- Transitions --- */
-        @keyframes slideInRight { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes cinematicLogo { 0% { opacity: 0; transform: scale(0.8); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="intro-screen" class="screen"><div class="logo-anim">AnimeFlex</div></div>
 
-    <div id="auth-screen" class="screen hidden">
-        <form class="glass-form active" onsubmit="event.preventDefault(); enterSite();">
-            <h2 style="margin-bottom:20px">Hunter Login</h2>
-            <input type="text" class="data" placeholder="Username" required>
-            <input type="password" class="data" placeholder="Password" required>
+    <div id="login-screen" class="screen hidden">
+        <form class="glass-panel active" onsubmit="event.preventDefault(); showProfiles();">
+            <h2 style="text-align: center; margin-bottom: 30px;">Hunter Login</h2>
+            <div class="input-group">
+                <input type="text" class="data" placeholder="Username" required>
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <div class="input-group">
+                <input type="password" class="data" placeholder="Password" required>
+                <i class="fa-solid fa-lock"></i>
+            </div>
             <button class="btn-premium">ENTER PORTAL</button>
         </form>
     </div>
 
+    <div id="profile-screen" class="screen hidden">
+        <h1 style="font-family:'Kanit'; font-weight: 900; margin-bottom: 30px;">WHO IS WATCHING?</h1>
+        <div class="avatar-grid" id="avatar-grid"></div>
+        <button class="btn-premium" style="margin-top: 40px; width: 200px;" onclick="finalizeLogin()">CONTINUE</button>
+    </div>
+
     <div class="app-container" id="main-app">
         <aside class="sidebar">
+            <img id="current-user-avatar" class="user-avatar-btn" src="">
             <div class="nav-item"><i class="fa-solid fa-house"></i><span>Home</span></div>
             <div class="nav-item"><i class="fa-solid fa-compass"></i><span>Explore</span></div>
         </aside>
-        <main class="main-view">
+        <main style="overflow-y: auto; background: var(--bg);">
             <section class="hero">
                 <div>
-                    <h1 style="font-size: 4rem; font-weight: 900;">HUNTER X HUNTER</h1>
-                    <p style="max-width: 500px; color: #ccc; margin: 20px 0;">The journey of Gon Freecss as he strives to become a legendary Hunter.</p>
-                    <button class="btn-premium" style="width: 200px;" onclick="openAnime()">WATCH NOW</button>
+                    <h1 style="font-size: 5rem; font-weight: 900; line-height: 1;">HUNTER X<br>HUNTER</h1>
+                    <p style="max-width: 500px; margin: 20px 0; color: #ccc;">Embark on the journey of Gon Freecss to find his father and become a legendary Hunter.</p>
+                    <button class="btn-premium">WATCH NOW</button>
                 </div>
             </section>
         </main>
     </div>
 
-    <div id="player">
-        <div class="video-container">
-            <div id="arc-info"></div>
-            <video id="main-video" controls></video>
-            <button id="skip-intro-btn" onclick="skipIntro()">SKIP INTRO</button>
-            
-            <div id="next-up-overlay">
-                <div style="font-size: 12px; color: #aaa;">NEXT EPISODE</div>
-                <div id="next-ep-name" style="font-weight: bold; font-size: 18px;">Episode Title</div>
-                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                    <button class="btn-premium" style="flex: 1; height: 40px; background: #fff; color: #000;" onclick="changeEpisode(1)">PLAY NOW</button>
-                    <button class="btn-premium" style="flex: 1; height: 40px; background: #333;" onclick="cancelAutoPlay()">CANCEL</button>
-                </div>
-                <div class="timer-bar"><div class="timer-progress" id="timer-bar"></div></div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        let currentEpIndex = 0;
-        let episodes = [];
-        let autoPlayCancelled = false;
+        const animeAvatars = [
+            { name: "Gon", url: "https://wallpapers.com/images/hd/hunter-x-hunter-gon-freecss-icon-9g4f0q4z3q4z3q4z.jpg" },
+            { name: "Killua", url: "https://i.pinimg.com/736x/8e/44/ad/8e44ad294827013321d234676839d39c.jpg" },
+            { name: "Naruto", url: "https://i.pinimg.com/originals/1a/df/8e/1adf8e16694e82e6c567824855799974.jpg" },
+            { name: "Luffy", url: "https://i.pinimg.com/originals/e4/20/0e/e4200e30d660f779185a08902581615d.jpg" },
+            { name: "Goku", url: "https://i.pinimg.com/originals/4d/9d/2f/4d9d2f2d957385f949c5e31e51b68181.jpg" },
+            { name: "Ichigo", url: "https://i.pinimg.com/736x/6b/6b/6b/6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b.jpg" },
+            { name: "Eren", url: "https://i.pinimg.com/736x/5f/1b/4a/5f1b4a39527f05c7546440c490805177.jpg" },
+            { name: "Gojo", url: "https://i.pinimg.com/originals/05/23/88/052388658827725510688970037c865a.jpg" },
+            { name: "Saitama", url: "https://i.pinimg.com/originals/81/25/71/812571f5478440c98f5a691763177726.jpg" },
+            { name: "Tanjiro", url: "https://i.pinimg.com/originals/7b/0a/7b/7b0a7b7b7b7b7b7b7b7b7b7b7b7b7b7b.jpg" },
+            { name: "Deku", url: "https://i.pinimg.com/originals/9d/9d/9d/9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d9d.jpg" },
+            { name: "Edward", url: "https://i.pinimg.com/originals/2d/2d/2d/2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d.jpg" },
+            { name: "Natsu", url: "https://i.pinimg.com/originals/3d/3d/3d/3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d.jpg" },
+            { name: "Asta", url: "https://i.pinimg.com/originals/4e/4e/4e/4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e.jpg" },
+            { name: "Itadori", url: "https://i.pinimg.com/originals/5f/5f/5f/5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f.jpg" },
+            { name: "Kaneki", url: "https://i.pinimg.com/originals/6a/6a/6a/6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a.jpg" },
+            { name: "Mob", url: "https://i.pinimg.com/originals/7c/7c/7c/7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c.jpg" },
+            { name: "Shinra", url: "https://i.pinimg.com/originals/8b/8b/8b/8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b.jpg" },
+            { name: "Rimuru", url: "https://i.pinimg.com/originals/9a/9a/9a/9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a.jpg" },
+            { name: "Kirito", url: "https://i.pinimg.com/originals/1e/1e/1e/1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e.jpg" },
+            { name: "Meliodas", url: "https://i.pinimg.com/originals/2f/2f/2f/2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f.jpg" },
+            { name: "Denji", url: "https://i.pinimg.com/originals/3c/3c/3c/3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c.jpg" },
+            { name: "Light", url: "https://i.pinimg.com/originals/4b/4b/4b/4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b.jpg" },
+            { name: "L", url: "https://i.pinimg.com/originals/5c/5c/5c/5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c.jpg" }
+        ];
 
-        // Load all 148 episodes dynamically
-        for(let i=1; i<=148; i++) {
-            episodes.push({ title: `Episode ${i}`, num: i, src: `hxh_ep_${i}.mp4` });
+        let selectedAvatarUrl = "";
+
+        window.onload = () => {
+            const grid = document.getElementById('avatar-grid');
+            animeAvatars.forEach(av => {
+                const img = document.createElement('img');
+                img.src = av.url;
+                img.className = 'avatar-opt';
+                img.onclick = () => {
+                    document.querySelectorAll('.avatar-opt').forEach(i => i.classList.remove('selected'));
+                    img.classList.add('selected');
+                    selectedAvatarUrl = av.url;
+                };
+                grid.appendChild(img);
+            });
+
+            setTimeout(() => {
+                document.getElementById('intro-screen').classList.add('hidden');
+                document.getElementById('login-screen').classList.remove('hidden');
+            }, 3000);
+        };
+
+        function showProfiles() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('profile-screen').classList.remove('hidden');
         }
 
-        function enterSite() {
-            document.getElementById('auth-screen').classList.add('hidden');
+        function finalizeLogin() {
+            if(!selectedAvatarUrl) return alert("Select a character first!");
+            document.getElementById('current-user-avatar').src = selectedAvatarUrl;
+            document.getElementById('profile-screen').classList.add('hidden');
+            
             const app = document.getElementById('main-app');
             app.style.visibility = 'visible';
             app.style.opacity = '1';
         }
-
-        function openAnime() {
-            playVideo(0);
-        }
-
-        function getArcData(epNum) {
-            if (epNum <= 26) return { name: "Hunter Exam / Zoldyck Family", ver: "Version 1" };
-            if (epNum <= 58) return { name: "Heavens Arena / Yorknew City", ver: "Version 2 (Alt Verse)" };
-            if (epNum <= 75) return { name: "Greed Island", ver: "Version 1" };
-            if (epNum <= 100) return { name: "Chimera Ant (Part 1)", ver: "Version 2 (Alt Verse)" };
-            if (epNum <= 136) return { name: "Chimera Ant (Part 2)", ver: "Version 1" };
-            return { name: "Election Arc", ver: "Version 2 (Alt Verse)" };
-        }
-
-        function playVideo(index) {
-            currentEpIndex = index;
-            autoPlayCancelled = false;
-            const ep = episodes[index];
-            const arc = getArcData(ep.num);
-            
-            const player = document.getElementById('player');
-            const video = document.getElementById('main-video');
-            const info = document.getElementById('arc-info');
-            
-            player.style.display = 'flex';
-            info.innerText = `${arc.name} | ${arc.ver}`;
-            video.src = ep.src;
-            video.play();
-
-            video.ontimeupdate = () => {
-                const skipBtn = document.getElementById('skip-intro-btn');
-                const nextOverlay = document.getElementById('next-up-overlay');
-
-                // Intro Logic
-                if (ep.num === 1) {
-                    // Episode 1: Intro is 0:50 to 2:20
-                    if (video.currentTime > 50 && video.currentTime < 140) {
-                        skipBtn.style.display = 'block';
-                    } else {
-                        skipBtn.style.display = 'none';
-                    }
-                } else {
-                    // Standard: Intro is 0:00 to 1:30
-                    if (video.currentTime > 2 && video.currentTime < 90) {
-                        skipBtn.style.display = 'block';
-                    } else {
-                        skipBtn.style.display = 'none';
-                    }
-                }
-
-                // Credit Skip / Next Episode Logic: Trigger with 1:30 remaining
-                // For Ep 1, ending starts at 21:10 (standard 1:30 before end)
-                let timeLeft = video.duration - video.currentTime;
-                if (timeLeft <= 90 && timeLeft > 0 && !autoPlayCancelled && index < episodes.length - 1) {
-                    showNextUp(episodes[index + 1].title);
-                }
-            };
-
-            video.onended = () => {
-                if (!autoPlayCancelled) changeEpisode(1);
-            };
-        }
-
-        function skipIntro() {
-            const ep = episodes[currentEpIndex];
-            if (ep.num === 1) {
-                document.getElementById('main-video').currentTime = 140; // Skip to 2:20
-            } else {
-                document.getElementById('main-video').currentTime = 90; // Skip to 1:30
-            }
-        }
-
-        function showNextUp(title) {
-            const overlay = document.getElementById('next-up-overlay');
-            if (overlay.style.display === 'flex') return;
-            
-            overlay.style.display = 'flex';
-            document.getElementById('next-ep-name').innerText = title;
-            
-            const bar = document.getElementById('timer-bar');
-            bar.style.transition = 'none';
-            bar.style.width = '100%';
-            setTimeout(() => {
-                bar.style.transition = 'width 90s linear'; // Matches the 1:30 credit time
-                bar.style.width = '0%';
-            }, 50);
-        }
-
-        function cancelAutoPlay() {
-            autoPlayCancelled = true;
-            document.getElementById('next-up-overlay').style.display = 'none';
-        }
-
-        function changeEpisode(dir) {
-            let next = currentEpIndex + dir;
-            if (next >= 0 && next < episodes.length) {
-                document.getElementById('next-up-overlay').style.display = 'none';
-                playVideo(next);
-            }
-        }
-
-        window.onload = () => {
-            setTimeout(() => {
-                document.getElementById('intro-screen').classList.add('hidden');
-                document.getElementById('auth-screen').classList.remove('hidden');
-            }, 3000);
-        };
     </script>
 </body>
 </html>
