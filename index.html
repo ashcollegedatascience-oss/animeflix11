@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeFlix | Hunter x Hunter</title>
+    <title>AnimeFlix | Stream</title>
     <style>
         :root {
             --netflix-red: #e50914;
@@ -27,7 +27,6 @@
             background: #000;
             transition: 0.3s ease;
             z-index: 2000;
-            overflow-y: auto;
             border-right: 1px solid #222;
         }
         .sidebar:hover { width: var(--sidebar-width); }
@@ -35,71 +34,98 @@
         .nav-item {
             padding: 20px 24px;
             display: flex; align-items: center;
-            cursor: pointer; white-space: nowrap;
+            cursor: pointer;
+            transition: background 0.2s;
         }
-        .nav-item:hover { background: #1a1a1a; color: var(--netflix-red); }
-        .nav-icon { margin-right: 30px; font-size: 1.5rem; font-style: normal; flex-shrink: 0; }
-        .nav-text { opacity: 0; transition: 0.2s; font-weight: bold; }
+        .nav-item:hover { background: #1a1a1a; }
+        .nav-text { opacity: 0; margin-left: 20px; transition: 0.2s; font-weight: bold; white-space: nowrap; }
         .sidebar:hover .nav-text { opacity: 1; }
 
-        .genre-list {
-            display: none; background: #080808;
-            flex-direction: column; padding-left: 20px;
-        }
+        .genre-list { display: none; background: #080808; flex-direction: column; padding-left: 20px; }
         .genre-list.active { display: flex; }
-        .genre-item { padding: 12px 24px; color: #888; cursor: pointer; }
+        .genre-item { padding: 10px; cursor: pointer; color: #aaa; }
         .genre-item:hover { color: white; }
 
-        /* --- MAIN LAYOUT --- */
+        /* --- CONTENT --- */
         .main-content { margin-left: var(--collapsed-width); }
 
         .top-nav {
             position: fixed; top: 0; right: 0;
             width: calc(100% - var(--collapsed-width));
             padding: 20px 40px;
-            display: flex; justify-content: space-between; align-items: center;
+            display: flex; justify-content: space-between;
             background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-            z-index: 1000; box-sizing: border-box;
+            z-index: 1000;
         }
-        .logo { color: var(--netflix-red); font-weight: 900; font-size: 1.8rem; cursor: pointer; }
+        .logo { color: var(--netflix-red); font-weight: 900; font-size: 1.8rem; cursor: pointer; letter-spacing: 1px; }
+
+        /* --- SLIDER --- */
+        .slider-container {
+            width: 100%;
+            height: 550px;
+            overflow: hidden;
+            position: relative;
+        }
+        .slider-wrapper {
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100%;
+        }
+        .slide {
+            min-width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center 20%; /* Adjusted for the characters' faces */
+            display: flex;
+            align-items: flex-end;
+            padding: 80px;
+            box-sizing: border-box;
+            cursor: pointer;
+            position: relative;
+        }
+        .slide-overlay {
+            background: linear-gradient(to top, var(--dark-bg) 10%, transparent 80%);
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 70%;
+        }
+        .slide-content { position: relative; z-index: 2; max-width: 600px; }
 
         /* --- PAGE SECTIONS --- */
-        .page-section { display: none; min-height: 100vh; }
+        .page-section { display: none; min-height: 100vh; animation: fadeIn 0.4s; }
         .active-section { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* --- HOME GRID --- */
-        .browse-container { padding: 100px 40px; }
-        .anime-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        /* --- HOME --- */
+        .browse-container { padding: 40px; }
+        .anime-grid { display: flex; gap: 20px; flex-wrap: wrap; }
         .anime-card { 
-            aspect-ratio: 2/3; background: #222; border-radius: 4px; 
-            cursor: pointer; transition: 0.3s; overflow: hidden;
+            width: 200px; aspect-ratio: 2/3; background: #222; 
+            border-radius: 4px; cursor: pointer; transition: 0.3s;
+            overflow: hidden;
         }
-        .anime-card:hover { transform: scale(1.05); }
+        .anime-card:hover { transform: scale(1.08); z-index: 10; }
         .anime-card img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- SHOW DETAIL (IMAGE FIX) --- */
+        /* --- DETAIL SECTION HERO --- */
         .hero {
-            height: 80vh;
-            /* WE USE AN ONLINE LINK HERE SO IT WORKS FOR YOU IMMEDIATELY */
-            background: linear-gradient(to top, var(--dark-bg), transparent 60%),
-                        linear-gradient(to right, rgba(0,0,0,0.8), transparent),
-                        url('https://images8.alphacoders.com/812/812061.jpg'); 
-            background-size: cover; background-position: center;
+            height: 85vh;
+            background-color: #222; 
+            background-image: 
+                linear-gradient(to top, var(--dark-bg) 5%, transparent 50%),
+                linear-gradient(to right, rgba(0,0,0,0.8) 20%, transparent 80%),
+                url('https://images.alphacoders.com/116/1163408.jpg'); 
+            background-size: cover; 
+            background-position: center 20%;
             display: flex; align-items: center; padding: 0 60px;
         }
-        .hero-title { font-size: 5rem; margin: 0; text-transform: uppercase; }
+        .hero-title { font-size: 5rem; margin: 0; font-weight: bold; text-shadow: 4px 4px 10px rgba(0,0,0,0.8); }
 
-        .ep-list { padding: 40px 60px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-        .ep-card { background: #181818; border-radius: 4px; cursor: pointer; padding: 15px; border: 1px solid #333; }
-        .ep-card:hover { border-color: var(--netflix-red); }
-
-        /* --- VIDEO PLAYER --- */
+        /* --- PLAYER --- */
         #videoOverlay {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: black; z-index: 3000;
         }
         video { width: 100%; height: 100%; }
-        .close-vid { position: absolute; top: 30px; left: 30px; font-size: 2.5rem; cursor: pointer; z-index: 3001; }
+        .close-vid { position: absolute; top: 30px; left: 30px; font-size: 2.5rem; cursor: pointer; z-index: 3001; text-shadow: 0 0 10px black; }
 
         .controls-wrapper {
             position: absolute; bottom: 0; width: 100%; height: 150px;
@@ -109,12 +135,19 @@
         }
         #videoOverlay:hover .controls-wrapper { opacity: 1; }
 
-        .progress-bar { width: 100%; height: 5px; background: #444; margin-bottom: 25px; cursor: pointer; }
+        .progress-bar { width: 100%; height: 5px; background: #444; margin-bottom: 25px; cursor: pointer; position: relative; }
         .progress-fill { height: 100%; background: var(--netflix-red); width: 0%; }
         
+        .btn-action {
+            background: white; border: none; color: black;
+            padding: 12px 28px; cursor: pointer; font-weight: bold;
+            border-radius: 4px; font-size: 1.1rem; transition: 0.2s;
+        }
+        .btn-action:hover { background: rgba(255,255,255,0.8); }
+
         .skip-btn {
             background: rgba(255,255,255,0.2); border: 1px solid white; color: white;
-            padding: 12px 28px; cursor: pointer; display: none; font-weight: bold;
+            padding: 10px 20px; cursor: pointer; display: none; font-weight: bold;
         }
         .skip-btn.show { display: inline-block; }
     </style>
@@ -123,18 +156,15 @@
 
     <div class="sidebar">
         <div class="nav-item" onclick="showSection('homeSection')">
-            <i class="nav-icon">🏠</i> <span class="nav-text">Home</span>
+            <span>🏠</span> <span class="nav-text">Home</span>
         </div>
         <div class="nav-item" onclick="toggleGenres()">
-            <i class="nav-icon">🎭</i> <span class="nav-text">Genres ▾</span>
+            <span>🎭</span> <span class="nav-text">Genres ▾</span>
         </div>
         <div id="genreSubmenu" class="genre-list">
             <div class="genre-item">Action</div>
-            <div class="genre-item">Adventure</div>
             <div class="genre-item">Shonen</div>
-        </div>
-        <div class="nav-item" onclick="playEpisode(0)">
-            <i class="nav-icon">🕒</i> <span class="nav-text">Resume</span>
+            <div class="genre-item">Seinen</div>
         </div>
     </div>
 
@@ -144,11 +174,33 @@
         </nav>
 
         <section id="homeSection" class="page-section active-section">
+            <div class="slider-container">
+                <div class="slider-wrapper" id="sliderWrapper">
+                    <div class="slide" style="background-image: url('https://images.alphacoders.com/116/1163408.jpg');" onclick="showSection('detailSection')">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h1 style="font-size: 3.5rem; margin: 0;">HUNTER X HUNTER</h1>
+                            <p style="font-size: 1.2rem;">Experience Gon's journey to become a legendary Hunter.</p>
+                        </div>
+                    </div>
+                    <div class="slide" style="background-image: url('https://images3.alphacoders.com/165/165203.jpg');">
+                        <div class="slide-overlay"></div>
+                        <div class="slide-content">
+                            <h1 style="font-size: 3.5rem; margin: 0;">ONE PIECE</h1>
+                            <p style="font-size: 1.2rem;">Luffy and the crew head towards the Grand Line.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="browse-container">
-                <h2>Trending Anime</h2>
+                <h2>Continue Watching</h2>
                 <div class="anime-grid">
                     <div class="anime-card" onclick="showSection('detailSection')">
-                        <img src="https://m.media-amazon.com/images/M/MV5BZjNmZjkzMzktYjMzYy00MzRmLTgzM2MtYmU1YWExYjA3OTkwXkEyXkFqcGdeQXVyMjc2Nzg5OTQ@._V1_.jpg" alt="HxH">
+                        <img src="https://m.media-amazon.com/images/M/MV5BZjNmZjkzMzktYjMzYy00MzRmLTgzM2MtYmU1YWExYjA3OTkwXkEyXkFqcGdeQXVyMjc2Nzg5OTQ@._V1_.jpg" alt="Hunter x Hunter">
+                    </div>
+                    <div class="anime-card">
+                        <img src="https://m.media-amazon.com/images/M/MV5BODcwNWE3OTItMDc3MS00NDFjLWE1OTAtNDU3NjgxODMxY2UyXkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_.jpg" alt="One Piece">
                     </div>
                 </div>
             </div>
@@ -158,11 +210,18 @@
             <div class="hero">
                 <div class="hero-content">
                     <h1 class="hero-title">HUNTER × HUNTER</h1>
-                    <p style="max-width: 600px; font-size: 1.2rem;">Gon Freecss discovers his father is a legendary Hunter.</p>
-                    <button class="skip-btn show" style="background:white; color:black; margin-top:20px;" onclick="playEpisode(0)">▶ Play Episode 1</button>
+                    <p style="max-width: 600px; font-size: 1.4rem; text-shadow: 2px 2px 5px #000; margin-top: 20px;">
+                        Gon Freecss aspires to become a Hunter, an exceptional being capable of greatness. With his friends, he seeks his long-lost father.
+                    </p>
+                    <div style="margin-top: 30px;">
+                        <button class="btn-action" onclick="playEpisode(0)">▶ Play S1:E1</button>
+                    </div>
                 </div>
             </div>
-            <div class="ep-list" id="epList"></div>
+            <div style="padding: 40px 60px;">
+                <h3 style="border-bottom: 2px solid var(--netflix-red); display: inline-block; padding-bottom: 10px;">Episodes</h3>
+                <div id="epList" style="margin-top: 20px;"></div>
+            </div>
         </section>
     </div>
 
@@ -170,12 +229,14 @@
         <span class="close-vid" onclick="closePlayer()">✕</span>
         <video id="mainVideo"></video>
         <div class="controls-wrapper">
-            <div class="progress-bar" onclick="seek(event)"><div id="progressFill" class="progress-fill"></div></div>
+            <div class="progress-bar" onclick="seek(event)">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
             <div style="display:flex; justify-content: space-between; align-items:center;">
-                <h2 id="vidTitle" style="margin:0;">Episode</h2>
+                <h2 id="vidTitle" style="margin:0; font-weight: normal;">Episode</h2>
                 <div>
                     <button id="skipIntro" class="skip-btn" onclick="skipTo(120)">SKIP INTRO</button>
-                    <button class="skip-btn show" style="margin-left:10px;" onclick="nextEp()">NEXT EPISODE</button>
+                    <button class="skip-btn show" style="margin-left:10px; background: white; color: black;" onclick="nextEp()">NEXT EPISODE</button>
                 </div>
             </div>
         </div>
@@ -184,47 +245,50 @@
     <script>
         const episodes = [
             { title: "Departure x And x Friends", file: "ep1.mp4" },
-            { title: "Test x Of x Tests", file: "ep2.mp4" }
+            { title: "Test x of x Tests", file: "ep2.mp4" }
         ];
-
-        let currentIdx = 0;
+        
         const video = document.getElementById('mainVideo');
+        const sliderWrapper = document.getElementById('sliderWrapper');
+        
+        // Slider Logic
+        let currentSlide = 0;
+        const totalSlides = 2;
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+        }, 5000);
 
-        function toggleGenres() { document.getElementById('genreSubmenu').classList.toggle('active'); }
+        function toggleGenres() { 
+            document.getElementById('genreSubmenu').classList.toggle('active'); 
+        }
 
         function showSection(id) {
             document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
             document.getElementById(id).classList.add('active-section');
-            window.scrollTo(0,0);
-        }
-
-        function renderEpisodes() {
-            const list = document.getElementById('epList');
-            episodes.forEach((ep, i) => {
-                list.innerHTML += `<div class="ep-card" onclick="playEpisode(${i})"><strong>${i+1}. ${ep.title}</strong></div>`;
-            });
+            window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
         function playEpisode(index) {
-            currentIdx = index;
             video.src = episodes[index].file;
-            document.getElementById('vidTitle').innerText = `S1:E${index+1} - ${episodes[index].title}`;
+            document.getElementById('vidTitle').innerText = `S1:E${index + 1} - ${episodes[index].title}`;
             document.getElementById('videoOverlay').style.display = 'block';
             video.play();
         }
 
-        function closePlayer() { video.pause(); document.getElementById('videoOverlay').style.display = 'none'; }
+        function closePlayer() { 
+            video.pause(); 
+            document.getElementById('videoOverlay').style.display = 'none'; 
+        }
+        
         function skipTo(time) { video.currentTime = time; }
         
-        function nextEp() {
-            if(currentIdx < episodes.length - 1) playEpisode(currentIdx + 1);
-            else closePlayer();
-        }
-
         video.ontimeupdate = () => {
-            document.getElementById('progressFill').style.width = (video.currentTime / video.duration) * 100 + '%';
-            // Show skip intro button if time is under 2 minutes
-            if(video.currentTime > 2 && video.currentTime < 115) {
+            if (video.duration) {
+                const percentage = (video.currentTime / video.duration) * 100;
+                document.getElementById('progressFill').style.width = percentage + '%';
+            }
+            if(video.currentTime > 5 && video.currentTime < 115) {
                 document.getElementById('skipIntro').classList.add('show');
             } else {
                 document.getElementById('skipIntro').classList.remove('show');
@@ -233,10 +297,21 @@
 
         function seek(e) {
             const rect = e.currentTarget.getBoundingClientRect();
-            video.currentTime = ((e.clientX - rect.left) / rect.width) * video.duration;
+            const pos = (e.clientX - rect.left) / rect.width;
+            video.currentTime = pos * video.duration;
         }
 
-        renderEpisodes();
+        const list = document.getElementById('epList');
+        episodes.forEach((ep, i) => {
+            list.innerHTML += `
+                <div style="padding:20px; background:#181818; margin-bottom:10px; cursor:pointer; display:flex; align-items:center; border-radius:4px; transition: 0.2s;" 
+                     onclick="playEpisode(${i})" 
+                     onmouseover="this.style.background='#222'" 
+                     onmouseout="this.style.background='#181818'">
+                    <span style="color:var(--netflix-red); font-weight:bold; margin-right:20px;">${i+1}</span>
+                    <span>${ep.title}</span>
+                </div>`;
+        });
     </script>
 </body>
 </html>
