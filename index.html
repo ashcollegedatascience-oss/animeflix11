@@ -53,6 +53,21 @@
         .video-container { width: 100%; max-width: 1000px; position: relative; }
         video { width: 100%; box-shadow: 0 0 50px rgba(0,0,0,1); }
 
+        /* --- Skip Credits Button --- */
+        #skip-credits {
+            position: absolute;
+            bottom: 80px;
+            right: 20px;
+            width: auto;
+            padding: 0 25px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000;
+            display: none;
+            z-index: 3100;
+            font-family: 'Kanit';
+            text-transform: uppercase;
+        }
+
         @keyframes cinematicLogo { 0% { opacity: 0; transform: scale(0.8); } 40% { opacity: 1; } 100% { opacity: 0; transform: scale(1.1); } }
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -83,7 +98,7 @@
                 <div class="hero-content">
                     <h1>HUNTER X HUNTER</h1>
                     <p style="max-width: 500px; margin: 20px 0; color: #ccc;">The journey of Gon Freecss.</p>
-                    <button class="btn-premium" style="width: 200px; background: var(--orange); color: white;" onclick="playEp(0)">WATCH EP 1</button>
+                    <button id="hero-play-btn" class="btn-premium" style="width: 200px; background: var(--orange); color: white;" onclick="playEp(0)">WATCH EP 1</button>
                 </div>
             </section>
         </main>
@@ -91,11 +106,13 @@
     <div id="player">
         <div class="video-container">
             <video id="main-video" controls></video>
+            <button id="skip-credits" class="btn-premium" onclick="nextEpisode()">Skip Credits & Next Episode</button>
             <button class="btn-premium" style="position:absolute; top:-50px; right:0; width:100px;" onclick="closePlayer()">CLOSE</button>
         </div>
     </div>
     <script>
         const episodes = ["ep1.mp4", "ep2.mp4", "ep3.mp4"];
+        let currentEpisodeIndex = 0;
         const avatars = Array.from({length: 24}, (_, i) => `https://api.dicebear.com/7.x/avataaars/svg?seed=Anime${i}`);
         let selectedAvatar = "";
 
@@ -112,20 +129,62 @@
                 grid.appendChild(img);
             });
             setTimeout(() => { document.getElementById('intro-screen').classList.add('hidden'); document.getElementById('auth-screen').classList.remove('hidden'); }, 3000);
+            
+            // Listener for Skip Credits detection
+            const video = document.getElementById('main-video');
+            const skipBtn = document.getElementById('skip-credits');
+            
+            video.ontimeupdate = () => {
+                // Shows button if there is less than 90 seconds left and another episode exists
+                const timeLeft = video.duration - video.currentTime;
+                if (timeLeft > 0 && timeLeft < 90 && currentEpisodeIndex < episodes.length - 1) {
+                    skipBtn.style.display = 'block';
+                } else {
+                    skipBtn.style.display = 'none';
+                }
+            };
+
+            video.onended = () => {
+                if (currentEpisodeIndex < episodes.length - 1) {
+                    nextEpisode();
+                }
+            };
         };
 
         function showProfiles() { document.getElementById('auth-screen').classList.add('hidden'); document.getElementById('profile-setup').classList.remove('hidden'); }
+        
         function enterSite() { 
             document.getElementById('user-avatar-mini').src = selectedAvatar;
             document.getElementById('profile-setup').classList.add('hidden');
             document.getElementById('main-app').style.visibility = 'visible'; document.getElementById('main-app').style.opacity = '1'; 
         }
+
         function playEp(index) {
+            currentEpisodeIndex = index;
             const player = document.getElementById('player');
             const video = document.getElementById('main-video');
-            player.style.display = 'flex'; video.src = episodes[index]; video.play();
+            const heroBtn = document.getElementById('hero-play-btn');
+            
+            // Update UI button text based on current playing ep
+            heroBtn.innerText = `WATCH EP ${index + 1}`;
+            
+            player.style.display = 'flex'; 
+            video.src = episodes[index]; 
+            video.play();
         }
-        function closePlayer() { document.getElementById('main-video').pause(); document.getElementById('player').style.display = 'none'; }
+
+        function nextEpisode() {
+            if (currentEpisodeIndex < episodes.length - 1) {
+                playEp(currentEpisodeIndex + 1);
+            } else {
+                closePlayer();
+            }
+        }
+
+        function closePlayer() { 
+            document.getElementById('main-video').pause(); 
+            document.getElementById('player').style.display = 'none'; 
+        }
     </script>
 </body>
 </html>
