@@ -3,150 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeFlix | Stream</title>
+    <title>AnimeFlix | Hunter x Hunter</title>
     <style>
-        /* CSS - Netflix Aesthetic */
         :root {
             --netflix-red: #e50914;
             --dark-bg: #141414;
-            --overlay-bg: rgba(0, 0, 0, 0.9);
+            --sidebar-width: 240px;
+            --transition: 0.3s ease;
         }
 
         body, html {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--dark-bg);
             color: white;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             overflow-x: hidden;
         }
 
-        /* Hero Section */
+        /* --- SIDEBAR --- */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0;
+            height: 100%;
+            width: 60px;
+            background: #000;
+            transition: var(--transition);
+            z-index: 2000;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #333;
+        }
+
+        .sidebar:hover { width: var(--sidebar-width); }
+
+        .nav-item {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover { background: #222; border-left: 3px solid var(--netflix-red); }
+        .nav-icon { margin-right: 25px; font-style: normal; font-size: 20px; }
+
+        /* --- TOP NAV & SEARCH --- */
+        .top-nav {
+            position: fixed;
+            top: 0; right: 0;
+            width: calc(100% - 60px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+            z-index: 1500;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.75);
+            border: 1px solid white;
+            padding: 5px 10px;
+        }
+
+        .search-container input {
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 5px;
+            outline: none;
+            width: 200px;
+        }
+
+        /* --- HERO SECTION --- */
         .hero {
-            height: 90vh;
+            height: 100vh;
             background: linear-gradient(to top, var(--dark-bg), transparent 50%),
                         linear-gradient(to right, rgba(0,0,0,0.8), transparent),
-                        url('https://images.unsplash.com/photo-1541562232579-512a21360020?auto=format&fit=crop&w=1600&q=80');
+                        url('https://images8.alphacoders.com/812/812061.jpg'); /* Hunter x Hunter Wallpaper */
             background-size: cover;
             background-position: center;
             display: flex;
             align-items: center;
-            padding: 0 5%;
+            padding-left: 100px;
         }
 
         .hero-content { max-width: 600px; }
-        .hero-title { font-size: 4rem; margin-bottom: 10px; color: var(--netflix-red); }
-        .hero-desc { font-size: 1.2rem; margin-bottom: 20px; line-height: 1.5; }
+        .hero-title { font-size: 5rem; margin: 0; font-weight: 900; letter-spacing: -2px; }
+        .hero-desc { font-size: 1.1rem; line-height: 1.4; margin: 20px 0; color: #ccc; }
 
-        .play-btn {
-            background-color: white;
-            color: black;
-            border: none;
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: opacity 0.2s;
+        .btn-play {
+            background: white; color: black; border: none;
+            padding: 12px 35px; font-size: 1.2rem; font-weight: bold;
+            border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 10px;
         }
 
-        .play-btn:hover { background-color: rgba(255,255,255,0.8); }
-
-        /* Video Player Overlay */
+        /* --- VIDEO PLAYER OVERLAY --- */
         #videoContainer {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background: black;
-            z-index: 1000;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: black; z-index: 3000;
         }
 
-        video { width: 100%; height: 100%; object-fit: contain; }
+        video { width: 100%; height: 100%; }
 
         .close-player {
-            position: absolute;
-            top: 20px; left: 20px;
-            font-size: 2rem;
-            cursor: pointer;
-            z-index: 1001;
-            text-shadow: 2px 2px 5px black;
+            position: absolute; top: 20px; left: 20px;
+            font-size: 2rem; cursor: pointer; z-index: 3002;
         }
 
-        /* Skip & Next Buttons */
-        .player-controls-ui {
+        /* --- AUTO-HIDE CONTROLS --- */
+        .video-controls-wrapper {
             position: absolute;
-            bottom: 80px;
-            right: 50px;
+            bottom: 0; left: 0; width: 100%;
+            height: 150px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            z-index: 1001;
+            justify-content: flex-end;
+            padding: 20px 40px;
+            box-sizing: border-box;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.4s;
+            z-index: 3001;
         }
 
-        .action-btn {
-            background: rgba(20, 20, 20, 0.8);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.5);
-            padding: 12px 25px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: 0.3s;
-            display: none; /* Hidden by default */
+        /* Show controls on hover */
+        #videoContainer:hover .video-controls-wrapper {
+            opacity: 1;
         }
 
-        .action-btn:hover {
-            background: white;
-            color: black;
-            border-color: white;
+        .progress-bar {
+            width: 100%; height: 5px; background: #555;
+            margin-bottom: 20px; cursor: pointer; position: relative;
+        }
+        .progress-filled { height: 100%; background: var(--netflix-red); width: 0%; }
+
+        .bottom-row { display: flex; justify-content: space-between; align-items: center; }
+        .left-controls { display: flex; gap: 20px; align-items: center; }
+
+        .skip-intro-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid white; color: white;
+            padding: 10px 20px; cursor: pointer;
+            display: none; /* Logic controlled */
         }
 
-        .show { display: block !important; }
-
+        .skip-intro-btn.active { display: block; }
     </style>
 </head>
 <body>
 
-    <header class="hero">
-        <div class="hero-content">
-            <h1 class="hero-title">DEMON SLAYER</h1>
-            <p class="hero-desc">Tanjirou Kamado, a kindhearted boy who sells charcoal for a living, finds his family slaughtered by a demon. To make matters worse, his younger sister Nezuko, the sole survivor, has been transformed into a demon herself.</p>
-            <button class="play-btn" onclick="openPlayer()">▶ Play Now</button>
+    <div class="sidebar">
+        <div class="nav-item"><i class="nav-icon">🏠</i> <span>Home</span></div>
+        <div class="nav-item"><i class="nav-icon">📺</i> <span>Series</span></div>
+        <div class="nav-item"><i class="nav-icon">🎬</i> <span>Movies</span></div>
+        <div class="nav-item"><i class="nav-icon">➕</i> <span>My List</span></div>
+    </div>
+
+    <div class="top-nav">
+        <div style="font-weight: bold; color: var(--netflix-red); font-size: 1.5rem;">ANIMEFLIX</div>
+        <div class="search-container">
+            <span>🔍</span>
+            <input type="text" placeholder="Titles, people, genres">
         </div>
-    </header>
+    </div>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">HUNTER × HUNTER</h1>
+            <p class="hero-desc">Gon Freecss aspires to become a Hunter, an exceptional being capable of greatness. With his friends and his potential, he seeks for his father who left him when he was young.</p>
+            <button class="btn-play" onclick="openPlayer()">▶ Play</button>
+        </div>
+    </section>
 
     <div id="videoContainer">
-        <span class="close-player" onclick="closePlayer()">←</span>
+        <span class="close-player" onclick="closePlayer()">✕</span>
         
         <video id="mainVideo">
             <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
         </video>
 
-        <div class="player-controls-ui">
-            <button id="skipIntro" class="action-btn" onclick="skipTo(40)">Skip Intro</button>
-            <button id="nextEp" class="action-btn" onclick="nextEpisode()">Next Episode</button>
-            <button id="skipCredits" class="action-btn" onclick="nextEpisode()">Skip Credits</button>
+        <div class="video-controls-wrapper">
+            <div class="progress-bar" onclick="seek(event)">
+                <div id="progressFilled" class="progress-filled"></div>
+            </div>
+
+            <div class="bottom-row">
+                <div class="left-controls">
+                    <button class="btn-play" style="padding:5px 15px;" onclick="togglePlay()">Pause</button>
+                    <span>Hunter x Hunter - Episode 1</span>
+                </div>
+                
+                <div class="right-controls">
+                    <button id="skipIntro" class="skip-intro-btn" onclick="skipTo(45)">SKIP INTRO</button>
+                    <button class="skip-intro-btn active" style="margin-left:10px" onclick="nextEpisode()">NEXT EPISODE</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         const video = document.getElementById('mainVideo');
-        const videoContainer = document.getElementById('videoContainer');
-        const skipIntroBtn = document.getElementById('skipIntro');
-        const nextEpBtn = document.getElementById('nextEp');
-        const skipCreditsBtn = document.getElementById('skipCredits');
+        const container = document.getElementById('videoContainer');
+        const progress = document.getElementById('progressFilled');
+        const skipIntro = document.getElementById('skipIntro');
 
         function openPlayer() {
-            videoContainer.style.display = 'block';
+            container.style.display = 'block';
             video.play();
-            // Request Fullscreen (Optional)
-            if (videoContainer.requestFullscreen) videoContainer.requestFullscreen();
         }
 
         function closePlayer() {
             video.pause();
-            videoContainer.style.display = 'none';
-            if (document.exitFullscreen) document.exitFullscreen();
+            container.style.display = 'none';
+        }
+
+        function togglePlay() {
+            if (video.paused) video.play();
+            else video.pause();
         }
 
         function skipTo(time) {
@@ -154,32 +233,29 @@
         }
 
         function nextEpisode() {
-            alert("Loading Next Episode: S1 E2...");
-            // In a real app, you would update video.src here
+            alert("Loading Hunter x Hunter Episode 2...");
             closePlayer();
         }
 
-        // Logic for Skip Buttons based on time
+        // Progress Bar & Skip Intro Logic
         video.ontimeupdate = () => {
-            const currentTime = video.currentTime;
-            const duration = video.duration;
+            // Update Bar
+            const percent = (video.currentTime / video.duration) * 100;
+            progress.style.width = percent + '%';
 
-            // 1. Skip Intro (Shows between 2 and 10 seconds)
-            if (currentTime > 2 && currentTime < 10) {
-                skipIntroBtn.classList.add('show');
+            // Show Skip Intro between 5 and 30 seconds
+            if (video.currentTime > 5 && video.currentTime < 30) {
+                skipIntro.classList.add('active');
             } else {
-                skipIntroBtn.classList.remove('show');
-            }
-
-            // 2. Skip Credits & Next Episode (Shows when 10 seconds are left)
-            if (duration - currentTime < 10) {
-                nextEpBtn.classList.add('show');
-                skipCreditsBtn.classList.add('show');
-            } else {
-                nextEpBtn.classList.remove('show');
-                skipCreditsBtn.classList.remove('show');
+                skipIntro.classList.remove('active');
             }
         };
+
+        function seek(e) {
+            const rect = e.target.getBoundingClientRect();
+            const pos = (e.pageX - rect.left) / rect.width;
+            video.currentTime = pos * video.duration;
+        }
     </script>
 </body>
 </html>
