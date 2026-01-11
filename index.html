@@ -160,14 +160,25 @@
                 const skipBtn = document.getElementById('skip-intro-btn');
                 const nextOverlay = document.getElementById('next-up-overlay');
 
-                // Intro Logic: Start (0:00) to End (1:30)
-                if (video.currentTime > 2 && video.currentTime < 90) {
-                    skipBtn.style.display = 'block';
+                // Intro Logic
+                if (ep.num === 1) {
+                    // Episode 1: Intro is 0:50 to 2:20
+                    if (video.currentTime > 50 && video.currentTime < 140) {
+                        skipBtn.style.display = 'block';
+                    } else {
+                        skipBtn.style.display = 'none';
+                    }
                 } else {
-                    skipBtn.style.display = 'none';
+                    // Standard: Intro is 0:00 to 1:30
+                    if (video.currentTime > 2 && video.currentTime < 90) {
+                        skipBtn.style.display = 'block';
+                    } else {
+                        skipBtn.style.display = 'none';
+                    }
                 }
 
                 // Credit Skip / Next Episode Logic: Trigger with 1:30 remaining
+                // For Ep 1, ending starts at 21:10 (standard 1:30 before end)
                 let timeLeft = video.duration - video.currentTime;
                 if (timeLeft <= 90 && timeLeft > 0 && !autoPlayCancelled && index < episodes.length - 1) {
                     showNextUp(episodes[index + 1].title);
@@ -180,7 +191,12 @@
         }
 
         function skipIntro() {
-            document.getElementById('main-video').currentTime = 90; // Skip to 1:30
+            const ep = episodes[currentEpIndex];
+            if (ep.num === 1) {
+                document.getElementById('main-video').currentTime = 140; // Skip to 2:20
+            } else {
+                document.getElementById('main-video').currentTime = 90; // Skip to 1:30
+            }
         }
 
         function showNextUp(title) {
