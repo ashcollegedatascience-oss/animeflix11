@@ -3,401 +3,292 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StreamZ | The Ultimate Anime Experience</title>
+    <title>StreamZ OS | Beyond Streaming</title>
     
     <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     <style>
         :root {
             --accent: #e50914;
-            --accent-glow: rgba(229, 9, 20, 0.5);
-            --bg: #050505;
-            --surface: #121212;
-            --surface-light: #1f1f1f;
-            --text: #ffffff;
-            --text-dim: #a3a3a3;
-            --dd-brand: #FF3008;
+            --bg: #030303;
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
 
-        /* --- CORE STYLES --- */
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
-        body { 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: 'Inter', sans-serif; 
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
+        [x-cloak] { display: none !important; }
+        body { background: var(--bg); color: #fff; font-family: 'Inter', sans-serif; overflow: hidden; }
+
+        /* UI ELEMENTS */
+        .glass { background: rgba(15, 15, 15, 0.8); backdrop-filter: blur(40px); border: 1px solid var(--glass-border); }
+        .ios-btn { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .ios-btn:active { transform: scale(0.92); opacity: 0.7; }
+
+        /* VHS CHASSIS */
+        .vhs-chassis { 
+            position: relative; overflow: hidden; 
+            border: 16px solid #1a1a1a; border-radius: 40px; 
+            box-shadow: inset 0 0 50px #000, 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .vhs-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 20;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 3px, 3px 100%;
+        }
+        .scanline {
+            width: 100%; height: 2px; position: absolute; top: 0; z-index: 21;
+            background: rgba(255, 255, 255, 0.1);
+            animation: moveScan 8s linear infinite;
+        }
+        @keyframes moveScan { from { top: 0; } to { top: 100%; } }
+
+        /* DYNAMIC ISLAND */
+        .dynamic-island { animation: islandBounce 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes islandBounce { 
+            0% { transform: translate(-50%, -100%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, 20px) scale(1); opacity: 1; }
         }
 
-        /* --- NAVIGATION --- */
-        .navbar {
-            position: fixed; top: 0; width: 100%; height: 80px; 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 0 4%; z-index: 5000;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.9), transparent);
-            transition: 0.4s;
-        }
-        .navbar.scrolled { background: var(--bg); border-bottom: 1px solid #222; }
-        .logo { font-family: 'Bebas Neue'; font-size: 2.8rem; color: var(--accent); letter-spacing: 2px; cursor: pointer; }
-
-        /* --- HERO & HOMEPAGE --- */
-        .hero {
-            height: 85vh; width: 100%; display: flex; align-items: center; padding: 0 6%;
-            background: linear-gradient(to right, var(--bg) 20%, transparent 100%),
-                        url('https://images.alphacoders.com/116/1163408.jpg') center 10%/cover;
-        }
-        .hero-content { max-width: 650px; animation: fadeInUp 1s ease; }
-        .hero-content h1 { font-family: 'Bebas Neue'; font-size: 7rem; line-height: 0.9; margin-bottom: 20px; }
-        .hero-content p { color: var(--text-dim); font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px; }
-
-        .content-row { padding: 40px 6%; }
-        .row-header { font-family: 'Bebas Neue'; font-size: 2rem; margin-bottom: 20px; color: var(--text-dim); }
-        .show-card {
-            width: 320px; height: 180px; background: var(--surface); border-radius: 6px;
-            overflow: hidden; cursor: pointer; position: relative;
-            transition: 0.4s cubic-bezier(0.2, 0, 0.2, 1); border: 2px solid transparent;
-        }
-        .show-card:hover { transform: scale(1.05); border-color: #fff; z-index: 10; }
-        .show-card img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* --- NETFLIX-STYLE EPISODE MODAL --- */
-        .modal-fullscreen {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 6000; overflow-y: auto; backdrop-filter: blur(10px);
-        }
-        .modal-container { width: 90%; max-width: 1100px; margin: 50px auto; background: var(--surface); border-radius: 12px; overflow: hidden; position: relative; }
-        .modal-banner { 
-            height: 450px; padding: 60px; display: flex; align-items: flex-end;
-            background: linear-gradient(to top, var(--surface), transparent),
-                        url('https://images.alphacoders.com/116/1163408.jpg') center/cover;
-        }
-        .ep-list { padding: 40px; display: flex; flex-direction: column; gap: 15px; }
-        .ep-row { 
-            display: grid; grid-template-columns: 60px 200px 1fr; gap: 20px; 
-            padding: 20px; border-radius: 8px; cursor: pointer; border-bottom: 1px solid #222;
-            transition: 0.2s;
-        }
-        .ep-row:hover { background: var(--surface-light); }
-        .ep-num { font-family: 'Bebas Neue'; font-size: 2.5rem; color: #444; align-self: center; }
-        .ep-thumb { width: 100%; height: 110px; background: #000; border-radius: 4px; overflow: hidden; }
-        .ep-thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        
-        /* --- THEATER SYSTEM --- */
-        #theater { display: none; position: fixed; inset: 0; background: #000; z-index: 10000; }
-        .theater-party { display: grid; grid-template-columns: 1fr 380px; height: 100vh; }
-        .theater-solo { display: flex; align-items: center; justify-content: center; height: 100vh; }
-        
-        .video-wrapper { position: relative; width: 100%; height: 100%; background: #000; display: flex; flex-direction: column; }
-        video { flex: 1; width: 100%; }
-
-        .chat-sidebar { background: var(--surface); border-left: 1px solid #222; display: flex; flex-direction: column; }
-        .chat-header { padding: 25px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; }
-        .chat-msgs { flex: 1; overflow-y: auto; padding: 20px; font-size: 0.9rem; color: #ccc; }
-        .msg-line { margin-bottom: 15px; }
-        .msg-line b { color: var(--accent); display: block; font-size: 0.75rem; text-transform: uppercase; margin-bottom: 2px; }
-
-        /* --- SQUAD CONTROLS --- */
-        .sidebar-tabs { display: flex; background: #000; border-bottom: 1px solid #222; }
-        .tab-btn { flex: 1; padding: 15px; font-size: 0.7rem; font-weight: 900; color: #555; cursor: pointer; text-align: center; }
-        .tab-btn.active { color: var(--accent); background: var(--surface); }
-
-        .squad-panel { display: none; padding: 20px; flex: 1; overflow-y: auto; }
-        .squad-panel.active { display: block; }
-        .sync-item { 
-            display: flex; gap: 10px; align-items: center; padding: 10px; 
-            background: #1a1a1a; margin-bottom: 8px; border-radius: 6px; cursor: pointer;
-            font-size: 0.8rem; border: 1px solid transparent; transition: 0.2s;
-        }
-        .sync-item:hover { border-color: var(--accent); background: #222; }
-        .sync-item b { color: var(--accent); font-family: 'Bebas Neue'; font-size: 1.2rem; }
-
-        .presence-bar { background: #080808; padding: 10px 20px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #111; }
-        .user-avatar { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); border: 2px solid #333; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 900; color: white; }
-
-        /* --- DOORDASH & PARTY POPUPS --- */
-        .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 15000; align-items: center; justify-content: center; }
-        .card-popup { background: var(--surface); width: 420px; padding: 40px; border-radius: 20px; border: 1px solid #333; text-align: center; }
-        .dd-white { background: #fff; color: #000; }
-        .dd-header { background: var(--dd-brand); color: #fff; padding: 30px; margin: -40px -40px 30px -40px; }
-        .dd-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; font-weight: 600; }
-        .dd-item:hover { background: #fff8f8; }
-
-        /* --- UI COMPONENTS --- */
-        .btn { padding: 14px 28px; border: none; border-radius: 4px; cursor: pointer; font-weight: 900; text-transform: uppercase; transition: 0.3s; }
-        .btn-accent { background: var(--accent); color: #fff; }
-        .btn-accent:hover { background: #b20710; box-shadow: 0 0 20px var(--accent-glow); }
-        .input-dark { width: 100%; padding: 15px; background: #000; border: 1px solid #333; color: #fff; border-radius: 6px; margin: 15px 0; text-align: center; font-weight: 900; font-size: 1.2rem; }
-
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
-<body>
+<body x-data="StreamZOS()" x-init="bootSystem()">
 
-    <nav class="navbar" id="mainNav">
-        <div class="logo" onclick="location.reload()">STREAMZ</div>
-        <div style="display:flex; gap:15px;">
-            <button class="btn" style="background:none; color:#fff; font-size:1.2rem;" onclick="toggleUI('ddPopup')"><i class="fas fa-shopping-bag"></i></button>
-            <button class="btn btn-accent" onclick="toggleUI('partyPopup')">JOIN PARTY</button>
+    <div x-show="island.active" x-cloak class="fixed top-0 left-1/2 -translate-x-1/2 z-[9999] w-[340px] p-4 glass rounded-[30px] dynamic-island flex items-center gap-4 shadow-2xl">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-white/5" x-text="island.icon"></div>
+        <div class="flex-1">
+            <p class="text-[9px] font-black text-red-500 uppercase tracking-widest" x-text="island.title"></p>
+            <p class="text-xs text-white/80 font-medium" x-text="island.msg"></p>
         </div>
-    </nav>
+    </div>
 
-    <div id="homePage">
-        <section class="hero">
-            <div class="hero-content">
-                <p style="color:var(--accent); font-weight:900; letter-spacing:4px; margin-bottom:10px;">TOP RATED ANIME</p>
-                <h1>HUNTER X HUNTER</h1>
-                <p>The journey of a young boy named Gon Freecss, who discovers that his father, whom he was told was dead, is actually alive and a world-renowned Hunter.</p>
-                <button class="btn btn-accent" onclick="openShowDetail()">PLAY SERIES</button>
+    <div x-show="parentGate.locked" x-cloak class="fixed inset-0 z-[10000] bg-black/98 backdrop-blur-3xl flex items-center justify-center p-6 text-center">
+        <div class="max-w-md">
+            <div class="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-user-shield text-3xl text-red-600"></i>
             </div>
-        </section>
-
-        <div class="content-row">
-            <h3 class="row-header">Trending Now</h3>
-            <div class="show-card" onclick="openShowDetail()">
-                <img src="https://images.alphacoders.com/116/1163408.jpg">
+            <h2 class="text-4xl font-black mb-2 uppercase italic tracking-tighter">System Locked</h2>
+            <p class="text-zinc-500 text-sm mb-8">This content is restricted. Enter Parental PIN to proceed.</p>
+            <div class="flex justify-center gap-3 mb-8">
+                <template x-for="i in 4">
+                    <div class="w-12 h-16 glass rounded-2xl flex items-center justify-center text-2xl font-bold" 
+                         :class="pinInput.length >= i ? 'border-red-600 text-red-600' : 'text-white/20'">*</div>
+                </template>
+            </div>
+            <div class="grid grid-cols-3 gap-3 max-w-[280px] mx-auto">
+                <template x-for="num in [1,2,3,4,5,6,7,8,9,0]">
+                    <button @click="enterPin(num)" class="ios-btn glass h-14 rounded-2xl font-bold hover:bg-white/10" x-text="num"></button>
+                </template>
+                <button @click="pinInput = ''" class="ios-btn glass h-14 rounded-2xl text-[10px] font-bold text-red-500 uppercase">Clear</button>
             </div>
         </div>
     </div>
 
-    <div id="detailModal" class="modal-fullscreen">
-        <div class="modal-container">
-            <div class="modal-banner">
-                <div onclick="toggleUI('detailModal')" style="position:absolute; top:30px; right:40px; font-size:2rem; cursor:pointer;">×</div>
-                <div>
-                    <h1 style="font-family:'Bebas Neue'; font-size:5rem;">EPISODES</h1>
-                    <p style="color:var(--text-dim);">Season 1: The Hunter Exam</p>
+    <div class="flex h-screen w-screen overflow-hidden">
+        
+        <aside class="w-20 xl:w-72 glass border-r border-white/5 flex flex-col z-50">
+            <div class="p-10">
+                <h1 class="text-3xl font-black italic tracking-tighter uppercase leading-none">Stream<span class="text-red-600">Z</span></h1>
+                <p class="text-[8px] font-bold text-zinc-600 uppercase tracking-[4px] mt-1">Operating System</p>
+            </div>
+
+            <nav class="flex-1 px-6 space-y-2">
+                <template x-for="nav in menu">
+                    <button @click="view = nav.id; zap()" 
+                            :class="view === nav.id ? 'bg-red-600 text-white' : 'text-zinc-500 hover:text-white'"
+                            class="ios-btn w-full flex items-center gap-4 p-4 rounded-[20px] font-black text-xs uppercase tracking-widest">
+                        <span x-text="nav.icon" class="text-lg"></span>
+                        <span x-text="nav.label" class="hidden xl:block"></span>
+                    </button>
+                </template>
+            </nav>
+
+            <div class="p-6 m-6 rounded-[25px] bg-red-600/10 border border-red-600/20">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-black text-red-600">CONCESSIONS</span>
+                    <i class="fas fa-shopping-cart text-[10px] text-red-600"></i>
                 </div>
+                <button @click="triggerIsland('🍔', 'DOORDASH', 'Ordering Movie Snacks...')" class="ios-btn w-full py-3 bg-red-600 text-white text-[10px] font-black rounded-xl uppercase tracking-tighter">Order DashPass</button>
             </div>
-            <div class="ep-list" id="epListTarget"></div>
-        </div>
-    </div>
+        </aside>
 
-    <div id="ddPopup" class="overlay">
-        <div class="card-popup dd-white">
-            <div class="dd-header">
-                <i class="fas fa-utensils" style="font-size:2rem;"></i>
-                <h2 style="font-family:'Bebas Neue'; margin-top:10px;">DashPass Concessions</h2>
-            </div>
-            <div class="dd-item" onclick="addSnack('Movie Popcorn Bucket')"><span>🍿 Large Popcorn</span> <span>$12.00</span></div>
-            <div class="dd-item" onclick="addSnack('Fountain Soda')"><span>🥤 Fountain Soda</span> <span>$5.50</span></div>
-            <div class="dd-item" onclick="addSnack('Milk Duds')"><span>🍬 Milk Duds</span> <span>$4.00</span></div>
-            <div id="cartStatus" style="padding:20px; color:#888; font-size:0.8rem;">Your cart is empty</div>
-            <button class="btn" style="width:100%; background:var(--dd-brand); color:#fff;" onclick="secureDoorDashHandoff()">CHECKOUT ON DOORDASH</button>
-            <p onclick="toggleUI('ddPopup')" style="margin-top:15px; color:#aaa; cursor:pointer; font-size:0.8rem;">Cancel Order</p>
-        </div>
-    </div>
-
-    <div id="partyPopup" class="overlay">
-        <div class="card-popup">
-            <h2 style="font-family:'Bebas Neue'; font-size:2.5rem;">WATCH PARTY</h2>
-            <div style="margin-top:30px;">
-                <button class="btn btn-accent" style="width:100%;" onclick="sessionAction('create')">CREATE NEW ROOM</button>
-                <div style="margin:20px 0; color:#444;">— OR —</div>
-                <input type="text" id="roomCodeIn" class="input-dark" placeholder="ENTER 6-DIGIT CODE">
-                <button class="btn" style="width:100%; background:var(--surface-light); color:#fff;" onclick="sessionAction('join')">JOIN PRIVATE SQUAD</button>
-            </div>
-            <p onclick="toggleUI('partyPopup')" style="margin-top:20px; color:#555; cursor:pointer;">Close Hub</p>
-        </div>
-    </div>
-
-    <div id="theater">
-        <div id="tLayout" class="theater-solo">
-            <div class="video-wrapper">
-                <div onclick="exitCinema()" style="position:absolute; top:30px; left:30px; z-index:100; cursor:pointer; background:rgba(0,0,0,0.6); padding:10px 20px; border-radius:4px; font-weight:900;">EXIT</div>
-                <video id="player" controls></video>
-                <div class="presence-bar" id="roomPresence">
-                    </div>
-            </div>
+        <main class="flex-1 flex flex-col relative">
             
-            <div id="sidebar" class="chat-sidebar" style="display:none;">
-                <div class="sidebar-tabs">
-                    <div class="tab-btn active" id="chatTab" onclick="switchSidebarTab('chat')">CHAT</div>
-                    <div class="tab-btn" id="syncTab" onclick="switchSidebarTab('sync')">SQUAD SYNC</div>
+            <header class="h-20 border-b border-white/5 flex items-center justify-between px-10 glass">
+                <div class="flex items-center gap-4">
+                    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                    <span class="text-[10px] font-bold uppercase text-zinc-500 tracking-widest">Live Sync: Active Room <span class="text-white" x-text="roomCode"></span></span>
                 </div>
-
-                <div id="chatPanel" class="squad-panel active">
-                    <div class="chat-header">
-                        <div>
-                            <p style="font-size:0.6rem; color:#666;">ROOM STATUS</p>
-                            <b id="activeCodeDisplay" style="color:var(--accent);">SOLO</b>
-                        </div>
-                        <div style="text-align:right;">
-                            <p style="font-size:0.6rem; color:#666;">SQUAD SIZE</p>
-                            <b id="activeCount">1/10</b>
-                        </div>
-                    </div>
-                    <div class="chat-msgs" id="chatBox"></div>
-                    <div style="padding:20px; border-top:1px solid #222;">
-                        <input type="text" id="chatInput" placeholder="Send a message..." style="width:100%; padding:12px; background:#000; border:1px solid #333; color:#fff; border-radius:4px;" onkeypress="if(event.key==='Enter') sendChat()">
+                <div class="flex gap-2">
+                    <button @click="view = 'parents'" class="ios-btn w-10 h-10 glass rounded-full flex items-center justify-center text-xs"><i class="fas fa-cog"></i></button>
+                    <div class="h-10 px-4 glass rounded-full flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-red-600"></div>
+                        <span class="text-[10px] font-black uppercase">Luffy_2026</span>
                     </div>
                 </div>
+            </header>
 
-                <div id="syncPanel" class="squad-panel">
-                    <button class="btn btn-accent" style="width:100%; font-size:0.7rem; margin-bottom:20px;" onclick="manualAddFriend()">+ ADD PERSON TO SQUAD</button>
-                    
-                    <h4 style="font-size:0.7rem; color:var(--accent); margin-bottom:15px; letter-spacing:1px;">MASTER CONTROL</h4>
-                    <div id="globalEpList"></div>
-                    
-                    <h4 style="font-size:0.7rem; color:var(--accent); margin:20px 0 10px; letter-spacing:1px;">SWITCH ANIME</h4>
-                    <div class="sync-item" onclick="sysMsg('SQUAD SYNC: Switched to Jujutsu Kaisen')">
-                        <img src="https://wallpapercave.com/wp/wp8213608.jpg" style="width:40px; height:25px; object-fit:cover;">
-                        <span>Jujutsu Kaisen</span>
+            <div class="flex-1 p-10 overflow-y-auto">
+                <div x-show="view === 'theater'" x-cloak class="max-w-6xl mx-auto">
+                    <div class="vhs-chassis aspect-video mb-10">
+                        <div class="scanline"></div>
+                        <div class="vhs-overlay"></div>
+                        <div class="absolute inset-0 bg-[#050505] flex items-center justify-center">
+                            <div class="text-center">
+                                <p class="font-mono text-zinc-700 text-sm tracking-widest uppercase mb-2">Signal Status: 0x442</p>
+                                <p class="text-4xl font-black italic opacity-20 animate-pulse">TRANSMISSION PAUSED</p>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-10 left-10 right-10 flex items-center justify-between z-30">
+                            <div class="flex gap-4">
+                                <button @click="zap()" class="ios-btn w-12 h-12 glass rounded-full flex items-center justify-center"><i class="fas fa-play"></i></button>
+                                <button @click="zap()" class="ios-btn w-12 h-12 glass rounded-full flex items-center justify-center"><i class="fas fa-step-forward"></i></button>
+                            </div>
+                            <div class="px-6 py-2 glass rounded-full text-[10px] font-black">CH 04: HUNTER X HUNTER</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <template x-for="ep in episodes">
+                            <div @click="zap()" class="ios-btn glass p-4 rounded-3xl border-white/5 flex items-center gap-6 group hover:border-red-600/50 transition">
+                                <div class="w-32 aspect-video bg-zinc-900 rounded-xl overflow-hidden relative">
+                                    <div class="absolute inset-0 bg-red-600/20 opacity-0 group-hover:opacity-100 transition"></div>
+                                    <div class="absolute bottom-2 left-2 text-[10px] font-black" x-text="'EP ' + ep.id"></div>
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-sm uppercase tracking-tighter" x-text="ep.title"></h4>
+                                    <p class="text-[10px] text-zinc-500 uppercase mt-1" x-text="ep.duration"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <div x-show="view === 'parents'" x-cloak class="max-w-3xl mx-auto glass p-10 rounded-[40px]">
+                    <h2 class="text-3xl font-black uppercase italic mb-8">Guardian Settings</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between p-6 glass rounded-2xl">
+                            <div>
+                                <p class="text-sm font-bold">Restrict Mature Content</p>
+                                <p class="text-[10px] text-zinc-500 uppercase">Blocks Seinen and High-Intensity ratings</p>
+                            </div>
+                            <button @click="settings.restrict = !settings.restrict" 
+                                    :class="settings.restrict ? 'bg-red-600' : 'bg-zinc-800'"
+                                    class="w-14 h-8 rounded-full relative transition">
+                                <div :class="settings.restrict ? 'translate-x-7' : 'translate-x-1'" class="absolute top-1 w-6 h-6 bg-white rounded-full transition"></div>
+                            </button>
+                        </div>
+                        <div class="p-6 glass rounded-2xl">
+                            <p class="text-sm font-bold mb-4">Master Sync PIN</p>
+                            <input type="password" value="****" class="bg-black/40 border border-white/10 w-full p-4 rounded-xl text-zinc-500" readonly>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     </div>
 
     <script>
-        // --- DATA ---
-        const EPISODES = [
-            { id: 1, title: "Departure x And x Friends", duration: "24m" },
-            { id: 2, title: "Test x of x Tests", duration: "24m" },
-            { id: 3, title: "Rivals x for x Survival", duration: "23m" },
-            { id: 4, title: "Hope x and x Ambition", duration: "24m" },
-            { id: 5, title: "Hisoka x is x Sneaky", duration: "24m" }
-        ];
+        function StreamZOS() {
+            return {
+                view: 'theater',
+                roomCode: 'SQUAD-' + Math.floor(Math.random() * 9999),
+                pinInput: '',
+                masterPin: '2026',
+                parentGate: { locked: false },
+                island: { active: false, icon: '', title: '', msg: '' },
+                settings: { restrict: true },
+                menu: [
+                    { id: 'theater', label: 'Theater Room', icon: '📽️' },
+                    { id: 'social', label: 'Squad Feed', icon: '📡' },
+                    { id: 'parents', label: 'Guardian', icon: '🛡️' }
+                ],
+                episodes: [
+                    { id: 1, title: 'Departure x And x Friends', duration: '23:45' },
+                    { id: 2, title: 'Test x of x Tests', duration: '23:50' },
+                    { id: 3, title: 'Rivals x for x Survival', duration: '23:10' },
+                    { id: 4, title: 'Hope x and x Ambition', duration: '24:00' }
+                ],
+                audioCtx: null,
 
-        let roomRegistry = ["ADMIN-2026"];
-        let cart = [];
-        let currentActiveRoom = null;
-        let squadNames = ["YOU"]; // Local registry of real people
+                bootSystem() {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    setTimeout(() => {
+                        this.triggerIsland('⚡', 'SYSTEM', 'StreamZ OS v2.0 Booted Successfully');
+                    }, 1000);
+                },
 
-        // --- CORE UI ---
-        function toggleUI(id) {
-            const el = document.getElementById(id);
-            const isVisible = el.style.display === 'flex' || el.style.display === 'block';
-            el.style.display = isVisible ? 'none' : (id === 'detailModal' ? 'block' : 'flex');
-        }
+                triggerIsland(icon, title, msg) {
+                    this.island = { active: true, icon, title, msg };
+                    setTimeout(() => this.island.active = false, 5000);
+                    this.playStatic();
+                },
 
-        function switchSidebarTab(tab) {
-            document.getElementById('chatTab').classList.toggle('active', tab === 'chat');
-            document.getElementById('syncTab').classList.toggle('active', tab === 'sync');
-            document.getElementById('chatPanel').classList.toggle('active', tab === 'chat');
-            document.getElementById('syncPanel').classList.toggle('active', tab === 'sync');
-        }
+                enterPin(num) {
+                    if(this.pinInput.length < 4) {
+                        this.pinInput += num;
+                        this.zap(1200);
+                    }
+                    if(this.pinInput === this.masterPin) {
+                        this.parentGate.locked = false;
+                        this.pinInput = '';
+                        this.triggerIsland('🔓', 'SECURITY', 'System Unlocked');
+                    } else if (this.pinInput.length === 4) {
+                        this.pinInput = '';
+                        this.zap(200);
+                    }
+                },
 
-        function openShowDetail() {
-            toggleUI('detailModal');
-            document.getElementById('epListTarget').innerHTML = EPISODES.map(ep => `
-                <div class="ep-row" onclick="launchTheater(${ep.id}, false)">
-                    <div class="ep-num">${ep.id}</div>
-                    <div class="ep-thumb"><img src="https://images.alphacoders.com/116/1163408.jpg"></div>
-                    <div>
-                        <div style="font-weight:900; margin-bottom:5px;">${ep.title}</div>
-                        <p style="font-size:0.8rem; color:#666;">Episode ${ep.id} • ${ep.duration}</p>
-                    </div>
-                </div>
-            `).join('');
-        }
+                zap(freq = 800) {
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.02, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.1);
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    osc.start();
+                    osc.stop(this.audioCtx.currentTime + 0.1);
+                },
 
-        // --- SQUAD MANAGEMENT ---
-        function manualAddFriend() {
-            const name = prompt("Enter the name of the friend joining your screen:");
-            if (name && name.trim().length > 0) {
-                squadNames.push(name.trim().toUpperCase());
-                updateSquadPresence();
-                sysMsg(`${name.toUpperCase()} joined the squad.`);
-            }
-        }
-
-        function updateSquadPresence() {
-            const count = squadNames.length;
-            document.getElementById('activeCount').innerText = `${count}/10`;
-            
-            const presence = document.getElementById('roomPresence');
-            presence.innerHTML = squadNames.map((name, index) => `
-                <div class="user-avatar" style="background:${index === 0 ? 'var(--accent)' : '#333'}">
-                    ${name.substring(0, 2)}
-                </div>
-            `).join('');
-        }
-
-        // --- SESSION LOGIC ---
-        function sessionAction(type) {
-            if (type === 'create') {
-                currentActiveRoom = "ROOM-" + Math.floor(1000 + Math.random() * 9000);
-                roomRegistry.push(currentActiveRoom);
-                launchTheater(1, true);
-            } else {
-                const input = document.getElementById('roomCodeIn').value.trim().toUpperCase();
-                if (roomRegistry.includes(input)) {
-                    currentActiveRoom = input;
-                    launchTheater(1, true);
-                } else {
-                    alert("INVALID CODE");
+                playStatic() {
+                    const bufferSize = this.audioCtx.sampleRate * 0.5;
+                    const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for(let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+                    const noise = this.audioCtx.createBufferSource();
+                    noise.buffer = buffer;
+                    const gain = this.audioCtx.createGain();
+                    gain.gain.setValueAtTime(0.03, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.5);
+                    noise.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    noise.start();
                 }
             }
-            toggleUI('partyPopup');
         }
+    </script>
 
-        // --- THEATER ENGINE ---
-        function launchTheater(epId, isParty) {
-            if(document.getElementById('detailModal').style.display === 'block') toggleUI('detailModal');
-            
-            document.getElementById('theater').style.display = 'block';
-            document.getElementById('tLayout').className = isParty ? 'theater-party' : 'theater-solo';
-            document.getElementById('sidebar').style.display = isParty ? 'flex' : 'none';
-            document.getElementById('activeCodeDisplay').innerText = isParty ? currentActiveRoom : "SOLO";
-            
-            syncGlobalVideo(epId, isParty);
-            
-            if (isParty) {
-                document.getElementById('globalEpList').innerHTML = EPISODES.map(ep => `
-                    <div class="sync-item" onclick="syncGlobalVideo(${ep.id}, true)">
-                        <b>${ep.id}</b> <span>${ep.title}</span>
-                    </div>
-                `).join('');
-                updateSquadPresence();
-                sysMsg("SECURE SYNC TUNNEL ACTIVE");
+    <script type="text/python-logic">
+        """
+        Conceptual Python Logic for StreamZ OS
+        Handling Content Metadata & Rating Security
+        """
+        def process_content_rating(show_id):
+            ratings = {
+                "hxh": {"rating": "PG-13", "locked": False},
+                "berserk": {"rating": "R", "locked": True}
             }
-        }
+            return ratings.get(show_id)
 
-        function syncGlobalVideo(id, isParty) {
-            const player = document.getElementById('player');
-            player.src = `ep${id}.mp4`; 
-            player.play();
-            if(isParty) sysMsg(`Screen updated to Episode ${id}`);
-        }
-
-        // --- CHAT & UTILS ---
-        function sysMsg(text) {
-            const box = document.getElementById('chatBox');
-            box.innerHTML += `<div style="color:var(--accent); font-size:0.6rem; text-align:center; margin-bottom:10px; font-weight:900;">[ ${text} ]</div>`;
-            box.scrollTop = box.scrollHeight;
-        }
-
-        function sendChat() {
-            const input = document.getElementById('chatInput');
-            if (!input.value) return;
-            document.getElementById('chatBox').innerHTML += `<div class="msg-line"><b>YOU</b>${input.value}</div>`;
-            input.value = "";
-            document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
-        }
-
-        function exitCinema() {
-            document.getElementById('player').pause();
-            document.getElementById('theater').style.display = 'none';
-        }
-
-        function addSnack(name) {
-            cart.push(name);
-            document.getElementById('cartStatus').innerText = "Selected: " + cart.join(", ");
-        }
-
-        function secureDoorDashHandoff() {
-            if (cart.length === 0) return;
-            window.open(`https://www.doordash.com/search/${encodeURIComponent(cart.join(" "))}`, '_blank');
-            cart = [];
-            document.getElementById('cartStatus').innerText = "Your cart is empty";
-            toggleUI('ddPopup');
-        }
-
-        window.addEventListener('scroll', () => {
-            const nav = document.getElementById('mainNav');
-            window.scrollY > 100 ? nav.classList.add('scrolled') : nav.classList.remove('scrolled');
-        });
+        def sync_theater_transmission(room_id, timestamp):
+            # Logic for forcing all client players to a specific frame
+            pass
     </script>
 </body>
 </html>
